@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Para Shivani — beautiful sin</title>
+<style>
+:root{
+  --paper:#09070b;
+  --ink:#e8dbe8;
+  --muted:#9b879d;
+  --green:#39233f;
+  --green-dark:#24162a;
+  --yellow:#b79ad0;
+  --gold:#7f5b8f;
+  --brown:#24152b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{background:#050406;font-family:"Cinzel","Times New Roman",serif}
+.scene{
+  position:relative;
+  width:100vw;
+  height:100vh;
+  min-height:620px;
+  overflow:hidden;
+  background:radial-gradient(circle at 50% 42%,rgba(73,39,82,.22),transparent 34%),radial-gradient(circle at 50% 100%,rgba(32,17,38,.55),transparent 55%),#09070b;
+}
+canvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  cursor:pointer;
+}
+
+/* Texto de la primera escena: reservado arriba, lejos del tallo */
+.intro-copy{
+  position:absolute;
+  z-index:4;
+  top:6.5%;
+  left:50%;
+  width:min(820px,84vw);
+  transform:translateX(-50%);
+  text-align:center;
+  color:#eadfed;
+  pointer-events:none;
+  transition:opacity 1s ease, transform 1s ease;
+}
+.intro-copy.hide{opacity:0;transform:translateX(-50%) translateY(-15px)}
+.intro-copy h1{
+  margin:0 0 14px;
+  font-size:clamp(20px,2.5vw,35px);
+  line-height:1.18;
+}
+.intro-copy p{
+  margin:0;
+  font:11px/1.5 Arial,sans-serif;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:#a894aa;
+}
+
+/* Segunda escena: el texto rodea al corazón sin cubrir la animación. */
+.final-copy{
+  display:block;
+  position:absolute;
+  inset:0;
+  z-index:5;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 1.4s ease;
+}
+.final-copy.show{opacity:1}
+
+/* Texto final: composición editorial y delicada alrededor del corazón. */
+.copy{
+  position:absolute;
+  color:#d5c4d8;
+  font-family:Georgia,"Times New Roman",serif;
+  text-shadow:0 2px 10px rgba(0,0,0,.85);
+}
+.copy p{
+  margin:0;
+  font-size:clamp(12px,1.02vw,15px);
+  line-height:1.62;
+  letter-spacing:.015em;
+}
+.copy strong{font-weight:700;color:#e7d8ea}
+.copy.top{
+  top:2.2%;
+  left:50%;
+  width:min(600px,44vw);
+  transform:translateX(-50%);
+  text-align:center;
+}
+.copy.left{
+  left:3.8%;
+  top:35%;
+  width:min(300px,22vw);
+  text-align:right;
+}
+.copy.right{
+  right:3.8%;
+  top:35%;
+  width:min(300px,22vw);
+  text-align:left;
+}
+.copy.bottom{
+  left:50%;
+  top:69.5%;
+  width:min(560px,40vw);
+  transform:translateX(-50%);
+  text-align:center;
+}
+.copy .title{
+  display:block;
+  margin-bottom:11px;
+  font-size:clamp(19px,2vw,29px);
+  line-height:1.1;
+  letter-spacing:.025em;
+  color:#e7d8ea;
+  font-style:italic;
+}
+.copy .title::before,.copy .title::after{
+  content:"✦";
+  display:inline-block;
+  margin:0 12px;
+  font-size:.48em;
+  vertical-align:middle;
+  color:#9b70ad;
+}
+.copy .signature{
+  display:block;
+  margin-top:10px;
+  font-style:italic;
+  color:#a58fa8;
+}
+.copy .author{
+  display:block;
+  margin-top:8px;
+  font-style:italic;
+  letter-spacing:.08em;
+  color:#8f7894;
+}
+@media(max-width:760px){
+  .copy.top{top:2.2%;width:78vw}
+  .copy.left{left:2%;top:34%;width:28vw;text-align:center}
+  .copy.right{right:2%;top:34%;width:28vw;text-align:center}
+  .copy.bottom{top:69%;width:76vw}
+  .copy p{font-size:9px;line-height:1.42}
+  .copy .title{font-size:16px}
+  .copy .title::before,.copy .title::after{margin:0 6px}
+  .copy .signature,.copy .author{font-size:9px}
+}
+
+/* Controles */
+.restart{
+  position:absolute;
+  z-index:10;
+  top:15px;
+  right:17px;
+  border:1px solid #60486a;
+  border-radius:999px;
+  padding:8px 13px;
+  background:rgba(12,8,15,.86);
+  color:#cbb6cf;
+  cursor:pointer;
+  font:12px Arial,sans-serif;
+}
+.hint{
+  position:absolute;
+  z-index:10;
+  bottom:14px;
+  left:50%;
+  transform:translateX(-50%);
+  color:#806d84;
+  font:10px Arial,sans-serif;
+  letter-spacing:.05em;
+  text-align:center;
+  width:90%;
+}
+
+/* En pantallas pequeñas los textos pasan a zonas laterales más estrechas
+   y la composición reduce el corazón para mantenerlo limpio. */
+@media(max-width:760px){
+  .scene{min-height:560px}
+  .intro-copy{top:5%;width:88vw}
+  .intro-copy h1{font-size:19px}
+  .intro-copy p{font-size:9px}
+
+  .copy.top{top:2%;width:76vw}
+  .copy.left{left:2%;top:34%;width:28vw}
+  .copy.right{right:2%;top:34%;width:28vw}
+  .copy.bottom{top:67%;width:68vw}
+  .copy p{font-size:9px;line-height:1.32}
+  .copy .title{font-size:15px}
+  .copy .signature{font-size:9px}
+}
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=UnifrakturCook:wght@700&display=swap');
+.intro-copy h1,.copy .title{font-family:"UnifrakturCook","Cinzel",serif;font-weight:700;letter-spacing:.04em;}
+.intro-copy p,.hint,.restart{font-family:"Cinzel",serif;}
+.copy p{font-family:"Cinzel",Georgia,serif;}
+.copy .title::before,.copy .title::after{content:"✦";text-shadow:0 0 12px rgba(155,112,173,.65);}
+.copy::before{content:"";position:absolute;inset:-18px -24px;z-index:-1;background:radial-gradient(ellipse,rgba(20,10,25,.55),transparent 68%);}
+.restart{box-shadow:0 0 18px rgba(96,60,108,.25);transition:all .25s ease;}
+.restart:hover{border-color:#9b70ad;background:rgba(24,14,29,.95);box-shadow:0 0 24px rgba(126,82,143,.35);}
+.scene::after{content:"✦  ☾  ✦";position:absolute;top:18px;left:50%;transform:translateX(-50%);z-index:2;color:#80608d;opacity:.7;font-size:13px;letter-spacing:1.2em;pointer-events:none;}
+</style>
+</head>
+<body>
+<main class="scene">
+<canvas id="canvas"></canvas>
+
+<section class="intro-copy" id="introCopy">
+  <h1>our teeth against my skin, your name beneath my breath</h1>
+  <p>Toca la flor · despierta el jardín de sombras</p>
+</section>
+
+<section class="final-copy" id="finalCopy">
+  <div class="copy top">
+    <span class="title">for you, bouquet of 𝙨𝙤𝙪𝙡𝙨.</span>
+    <p>A little bite, a little sin, and suddenly I forgot how to behave.</p>
+  </div>
+
+  <div class="copy left">
+    <p>Wear that mark proudly. Let it remind you exactly who was there when the night stopped being innocent.</p>
+  </div>
+
+  <div class="copy right">
+    <p>Keep your innocence. I’m more interested in the moment you decide to surrender it to temptation.</p>
+  </div>
+
+  <div class="copy bottom">
+    <p><strong>ASOULDUST</strong> don’t ask me to be gentle when all you’ve done is tempt the darker side of me.</p>
+    <span class="signature">I like watching your self-control slowly disappear.</span>
+    <span class="author">- Declan</span>
+  </div>
+</section>
+
+<button class="restart" id="restart">Repetir ✦</button>
+<div class="hint" id="hint">toca la flor · deja que las sombras despierten</div>
+</main>
+
+<script>
+(() => {
+  const canvas=document.getElementById("canvas");
+  const ctx=canvas.getContext("2d");
+  const intro=document.getElementById("introCopy");
+  const finalCopy=document.getElementById("finalCopy");
+  const hint=document.getElementById("hint");
+  const restart=document.getElementById("restart");
+
+  let W,H,dpr,phase="waiting",start=0,bloomStart=0,flowers=[],raf=0;
+
+  const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+  const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+
+  function resize(){
+    dpr=window.devicePixelRatio||1;
+    W=innerWidth; H=innerHeight;
+    canvas.width=Math.floor(W*dpr);
+    canvas.height=Math.floor(H*dpr);
+    canvas.style.width=W+"px";
+    canvas.style.height=H+"px";
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    createHeart();
+  }
+
+  function line(points,width,color,alpha=1){
+    ctx.save();
+    ctx.globalAlpha=alpha;
+    ctx.strokeStyle=color;
+    ctx.lineWidth=width;
+    ctx.lineCap="round";
+    ctx.lineJoin="round";
+    ctx.beginPath();
+    points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* Hoja natural: nace desde el tallo y se abre hacia un lado.
+     Cada hoja tiene su propia altura/ángulo para evitar el aspecto de hojas superpuestas. */
+  function leaf(x,y,side,size,rotation,alpha=1){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(rotation);
+    ctx.scale(side,1);
+    ctx.globalAlpha=alpha;
+
+    ctx.fillStyle="#39233f";
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.bezierCurveTo(
+      size*.22,-size*.48,
+      size*.72,-size*.67,
+      size*1.12,-size*.43
+    );
+    ctx.bezierCurveTo(
+      size*1.30,-size*.18,
+      size*1.16,.02,
+      size*.72,.10
+    );
+    ctx.bezierCurveTo(
+      size*.38,.14,
+      size*.12,.07,
+      0,0
+    );
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.globalAlpha=alpha*.34;
+    ctx.strokeStyle="#21152a";
+    ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.quadraticCurveTo(size*.52,-size*.20,size*1.08,-size*.40);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function petal(x,y,r,a,alpha=1){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(a);
+    ctx.globalAlpha=alpha;
+    ctx.fillStyle="#f1c84b";
+    ctx.beginPath();
+    ctx.ellipse(0,-r*.72,r*.28,r*.66,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function flower(x,y,r,alpha=1){
+    ctx.save();
+    for(let i=0;i<14;i++) petal(x,y,r,i*Math.PI*2/14,alpha);
+    ctx.globalAlpha=alpha;
+    ctx.fillStyle="#24152b";
+    ctx.beginPath();ctx.arc(x,y,r*.31,0,Math.PI*2);ctx.fill();
+
+    ctx.fillStyle="#120b16";
+    for(let i=0;i<8;i++){
+      const a=i*Math.PI*2/8;
+      ctx.beginPath();
+      ctx.arc(x+Math.cos(a)*r*.19,y+Math.sin(a)*r*.19,r*.034,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function heartPoint(t, unit, cx, cy){
+    const x=16*Math.pow(Math.sin(t),3)*unit;
+    const y=(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))*unit;
+    return [cx+x, cy-y];
+  }
+
+  function pointInPolygon(x,y,poly){
+    let inside=false;
+    for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+      const xi=poly[i][0], yi=poly[i][1];
+      const xj=poly[j][0], yj=poly[j][1];
+      const hit=((yi>y)!==(yj>y)) && (x < (xj-xi)*(y-yi)/(yj-yi)+xi);
+      if(hit) inside=!inside;
+    }
+    return inside;
+  }
+
+  function createHeart(){
+    flowers=[];
+    const cx=W*.5;
+    const cy=H*.405;
+    const unit=Math.min(W,H)*.0172;
+    const polygon=[];
+
+    // Silueta del corazón. En la segunda animación se rellena por completo
+    // con una malla de girasoles, manteniendo el borde limpio.
+    for(let i=0;i<420;i++) polygon.push(heartPoint(i/420*Math.PI*2,unit,cx,cy));
+
+    // Malla cerrada: el corazón queda completamente cubierto de florecitas.
+    // Densidad equilibrada para que el corazón se vea lleno sin saturar
+    // la GPU del teléfono durante la animación.
+    const gap=Math.max(8.0,Math.min(10.0,Math.min(W,H)*.012)); 
+    const r=Math.max(4.0,Math.min(5.7,Math.min(W,H)*.0062));
+    let row=0;
+    for(let y=cy-unit*17.25;y<=cy+unit*17.25;y+=gap){
+      const offset=(row%2)*gap*.50;
+      for(let x=cx-unit*16.5+offset;x<=cx+unit*16.5;x+=gap){
+        const jx=(Math.random()-.5)*gap*.18;
+        const jy=(Math.random()-.5)*gap*.18;
+        const px=x+jx, py=y+jy;
+        if(pointInPolygon(px,py,polygon)){
+          flowers.push({
+            x:px,
+            y:py,
+            r:r*(.90+Math.random()*.18),
+            delay:(flowers.length*.004)+Math.random()*.12
+          });
+        }
+      }
+      row++;
+    }
+  }
+
+  function drawFirst(t){
+    const x=W*.5;
+    const bottom=H*.88;
+    const top=H*.40;
+    const growth=clamp(t/3.3);
+    const y=lerp(bottom,top,ease(growth));
+
+    // Tallo central.
+    line([[x,bottom],[x,y]],Math.max(4,W*.0085),"#2c7b59",growth);
+
+    // Hojas separadas, sin tocarse.
+    if(growth>.20) leaf(x,H*.69,-1,W*.11,-.16,clamp((growth-.20)*2.8));
+    if(growth>.45) leaf(x,H*.59, 1,W*.105,.02,clamp((growth-.45)*2.8));
+
+    // Flor inicial: espera a que el usuario la toque.
+    const bloom=.20+.80*clamp(t/2.25);
+    flower(x,y,Math.min(W,H)*.045*bloom,1);
+  }
+
+  function smallFlower(x,y,size,petalColor,centerColor,alpha=1,tilt=0){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(tilt);
+    ctx.globalAlpha=alpha;
+    ctx.fillStyle=petalColor;
+    for(let i=0;i<5;i++){
+      const a=i*Math.PI*2/5;
+      ctx.save();
+      ctx.rotate(a);
+      ctx.beginPath();
+      ctx.ellipse(0,-size*.62,size*.27,size*.58,0,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.fillStyle=centerColor;
+    ctx.beginPath();ctx.arc(0,0,size*.25,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+
+  // Flores secundarias: nacen desde el suelo y sobresalen claramente por encima del césped.
+  const groundFlowers=[
+    {x:.055,y:.855,s:.041,c:'#8b0f24',k:'#4b0715',h:.12},
+    {x:.235,y:.835,s:.038,c:'#b51f35',k:'#5a0818',h:-.08},
+    {x:.755,y:.805,s:.050,c:'#c21f32',k:'#620914',h:.06},
+    {x:.915,y:.825,s:.046,c:'#8f1025',k:'#430610',h:-.04},
+    {x:.38,y:.865,s:.034,c:'#d52b3f',k:'#680917',h:.11},
+    {x:.62,y:.845,s:.037,c:'#a9142c',k:'#4d0614',h:-.08},
+    {x:.12,y:.875,s:.030,c:'#7f0d20',k:'#3d0510',h:.05},
+    {x:.84,y:.865,s:.031,c:'#cf2639',k:'#5b0715',h:-.05}
+  ];
+  function drawGrass(t){
+    const fade=clamp((t-.65)/2.2);
+    if(fade<=0) return;
+
+    ctx.save();
+    ctx.globalAlpha=fade;
+    ctx.strokeStyle='#39233f';
+    ctx.lineCap='round';
+    ctx.lineJoin='round';
+
+    // Césped denso a todo lo ancho, con alturas variadas para llenar el piso.
+    for(let x=-10, i=0; x<W+20; x+=9, i++){
+      const base=H*.985 + Math.sin(i*.73)*2;
+      const h=18 + (Math.sin(i*1.91)*.5+.5)*25 + (i%7===0?12:0);
+      const lean=Math.sin(i*1.37)*6 + Math.sin(i*.43)*2;
+      const sway=Math.sin(t*1.8+i*.31)*4.5 + Math.sin(t*.9+i*.17)*2;
+      ctx.lineWidth=1.8 + (i%4)*.35;
+      ctx.beginPath();
+      ctx.moveTo(x,base);
+      ctx.quadraticCurveTo(x+lean*.35,base-h*.55,x+lean+sway,base-h);
+      ctx.stroke();
+    }
+
+    // Segunda capa para que el borde inferior se vea lleno y natural.
+    ctx.lineWidth=2.2;
+    for(let x=0, i=0; x<W+14; x+=15, i++){
+      const base=H*.998;
+      const h=12 + (Math.sin(i*2.43)*.5+.5)*20;
+      const lean=Math.cos(i*1.11)*8 + Math.sin(i*.29)*2;
+      ctx.beginPath();
+      ctx.moveTo(x,base);
+      ctx.quadraticCurveTo(x+lean*.4,base-h*.45,x+lean,base-h);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawGround(t){
+    const fade=clamp((t-.45)/2.4);
+    if(fade<=0) return;
+
+    drawGrass(t);
+
+    groundFlowers.forEach((g,i)=>{
+      const a=clamp((t-(1.1+i*.14))/1.35);
+      if(a>0){
+        const sway=Math.sin(t*1.4+i)*2;
+        // El tallo llega muy por encima del césped para que las flores destaquen.
+        line([[W*g.x,H*.99],[W*g.x+sway,H*g.y]],Math.max(2.7,W*.0033),'#28785a',a);
+        smallFlower(W*g.x+sway,H*g.y,g.s*Math.min(W,H),g.c,g.k,a,g.h);
+      }
+    });
+  }
+
+  function drawSecond(t){
+    const x=W*.5;
+    const bottom=H*.90;
+    // El tallo llega exactamente a la punta inferior del corazón.
+    const top=H*.405 + Math.min(W,H)*.0172*17.25;
+    const grow=clamp(t/2.4);
+
+    line([[x,bottom],[x,top]],Math.max(4,W*.0085),'#2c7b59',grow);
+
+    // Hojas separadas, debajo del corazón.
+    if(grow>.18) leaf(x,H*.75,-1,W*.11,-.16,clamp((grow-.18)*1.4));
+    if(grow>.38) leaf(x,H*.70, 1,W*.105,.02,clamp((grow-.38)*1.5));
+
+    // El corazón está completamente relleno de girasoles.
+    const ft=clamp((t-.25)/4.2);
+    flowers.forEach((f,i)=>{
+      const a=clamp((ft-f.delay/4.2)*3.0);
+      if(a>0) flower(f.x,f.y,f.r*ease(a),a);
+    });
+
+    // Una flor en la punta inferior une visualmente el corazón con el tallo.
+    const tipA=clamp((t-2.0)/1.2);
+    if(tipA>0){
+      const tipY=H*.405 + Math.min(W,H)*.0172*17.25;
+      flower(x,tipY,Math.max(5.2,Math.min(7.0,Math.min(W,H)*.0076)),tipA);
+    }
+
+    // Flores de colores ocupando el piso.
+    drawGround(t);
+  }
+
+  function loop(){
+    const now=performance.now();
+    const t=(now-start)/1000;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle="#09070b";
+    ctx.fillRect(0,0,W,H);
+
+    if(phase==="waiting"){
+      drawFirst(t);
+    }else{
+      const bt=(now-bloomStart)/1000;
+      drawSecond(bt);
+      if(bt>8.5) finalCopy.classList.add("show");
+    }
+
+    raf=requestAnimationFrame(loop);
+  }
+
+  function reset(){
+    phase="waiting";
+    start=performance.now();
+    bloomStart=0;
+    intro.classList.remove("hide");
+    finalCopy.classList.remove("show");
+    restart.style.display="block";
+    hint.textContent="toca la flor · deja que las sombras despierten";
+  }
+
+  function activate(){
+    if(phase!=="waiting") return;
+    phase="blooming";
+    bloomStart=performance.now();
+    intro.classList.add("hide");
+    restart.style.display="block";
+    hint.textContent="";
+  }
+
+  canvas.addEventListener("click",activate);
+  canvas.addEventListener("touchstart",activate,{passive:true});
+  restart.addEventListener("click",reset);
+  window.addEventListener("resize",resize);
+
+  resize();
+  reset();
+  cancelAnimationFrame(raf);
+  loop();
+})();
+</script>
+</body>
+</html>
